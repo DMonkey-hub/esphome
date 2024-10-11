@@ -1,1 +1,1 @@
-lust a test
+Just a test
