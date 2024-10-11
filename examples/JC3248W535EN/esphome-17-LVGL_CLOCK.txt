@@ -29,7 +29,6 @@ globals:
 external_components:
   - source: github://dmonkey-hub/esphome
     components: [ axs15231 ]
-    refresh: 1min
 
 ################################################################################
 # Board Configuration
