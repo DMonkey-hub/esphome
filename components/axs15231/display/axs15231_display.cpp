@@ -270,7 +270,7 @@ void AXS15231Display::display_() {
   this->enable();
 
   // ############ DMonkey - force the next line to always draw the full screen
-  if (this->x_low_ == 0 && this->y_low_ == 0 && x_pad == 0) {
+  if (true) { //(this->x_low_ == 0 && this->y_low_ == 0 && x_pad == 0) {
       this->write_cmd_addr_data(8, 0x32, 24, 0x2C00, this->buffer_, w * h * 2, 4);
   } else {
     this->write_cmd_addr_data(8, 0x32, 24, 0x2C00, nullptr, 0, 4);
