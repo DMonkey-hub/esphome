@@ -1,5 +1,5 @@
 import esphome.codegen as cg
 
-CODEOWNERS = ["@buglloc"]
+CODEOWNERS = ["@DMonkey-hub"]
 
 axs15231_ns = cg.esphome_ns.namespace("axs15231")
