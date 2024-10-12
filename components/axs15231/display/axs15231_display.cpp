@@ -1,6 +1,5 @@
 #include "axs15231_display.h"
 #include "axs15231_defines.h"
-
 #include "esphome/core/log.h"
 #include "esphome/components/display/display_color_utils.h"
 
