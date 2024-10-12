@@ -260,8 +260,8 @@ void AXS15231Display::display_() {
 
   // we will only update the changed rows to the display
   // ############ DMonkey - force the next 2 lines to full width and height
-  size_t const w = this->width_; //this->x_high_ - this->x_low_ + 1;
-  size_t const h = this->height_; //this->y_high_ - this->y_low_ + 1;
+  size_t const w = this->width_; // this->x_high_ - this->x_low_ + 1;
+  size_t const h = this->height_; // this->y_high_ - this->y_low_ + 1;
   size_t const x_pad = this->get_width_internal() - w - this->x_low_;
   // ############ DMonkey - force the window to full screen
   this->set_addr_window_(1, 1, this->width_, this->height_);
@@ -270,7 +270,7 @@ void AXS15231Display::display_() {
   this->enable();
 
   // ############ DMonkey - force the next line to always draw the full screen
-  if (true) { //(this->x_low_ == 0 && this->y_low_ == 0 && x_pad == 0) {
+  if (true) { // (this->x_low_ == 0 && this->y_low_ == 0 && x_pad == 0) {
       this->write_cmd_addr_data(8, 0x32, 24, 0x2C00, this->buffer_, w * h * 2, 4);
   } else {
     this->write_cmd_addr_data(8, 0x32, 24, 0x2C00, nullptr, 0, 4);
