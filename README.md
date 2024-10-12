@@ -9,7 +9,7 @@ Point to this driver using the following section in your yaml file
 external_components:
   - source: github://dmonkey-hub/esphome
     components: [ axs15231 ] 
-</pre>pre>
+</pre>
 
 If there are problems compiling please do a 'Clean Build Files' from the ESPHome page
 
