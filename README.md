@@ -14,5 +14,8 @@ external_components:
 If there are problems compiling please do a 'Clean Build Files' from the ESPHome page
 
 good luck
-
+<br>
+The image below shows the example included.
+The buttons 10-40 rest the Test meter to that value for 1 second. Touching the meter resets it to zero. Touching the clock displays a simple message box.
+That's it.
 <img src="LVGL%20example.jpg" alt="Example image">
