@@ -150,7 +150,7 @@ interval:
 
 
 time:
-  - platform: sntp
+  - platform: homeassistant
     id: esptime
     on_time:
       - seconds: "*"
