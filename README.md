@@ -5,9 +5,11 @@ This repository fixes those problems in the driver and provides a working exampl
 
 Point to this driver using the following section in your yaml file
 
+<pre>
 external_components:
   - source: github://dmonkey-hub/esphome
     components: [ axs15231 ] 
+</pre>pre>
 
 If there are problems compiling please do a 'Clean Build Files' from the ESPHome page
 
