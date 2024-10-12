@@ -15,4 +15,4 @@ If there are problems compiling please do a 'Clean Build Files' from the ESPHome
 
 good luck
 
-<img src="/esphome/blob/main/LVGL%20example.jpg" alt="Example image">
+<img src="LVGL%20example.jpg" alt="Example image">
