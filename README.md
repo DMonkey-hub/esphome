@@ -14,3 +14,5 @@ external_components:
 If there are problems compiling please do a 'Clean Build Files' from the ESPHome page
 
 good luck
+
+<img source="/esphome/blob/main/LVGL%20example.jpg">
