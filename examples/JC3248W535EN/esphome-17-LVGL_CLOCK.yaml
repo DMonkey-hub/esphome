@@ -28,8 +28,8 @@ globals:
 
 external_components:
   - source: github://dmonkey-hub/esphome
-    components: [ axs15231 ]
-
+    components: [ axs15231 ] 
+    
 ################################################################################
 # Board Configuration
 ################################################################################
@@ -39,9 +39,7 @@ esphome:
   platformio_options:
     build_flags: "-DBOARD_HAS_PSRAM"
     board_build.arduino.memory_type: qio_opi
-  on_boot:
-    priority: 800
-    then:
+
 
 psram:
   mode: octal
@@ -59,7 +57,7 @@ esp32:
 ################################################################################
 logger:
   logs:
-    component: ERROR #DEBUG #ERROR
+    component: ERROR
 
 ################################################################################
 # Enable Home Assistant API
@@ -134,7 +132,6 @@ switch:
     id: switch_lcdbacklight
     restore_mode: ALWAYS_ON
   
-
 ################################################################################
 # Interval
 ################################################################################
@@ -151,22 +148,14 @@ interval:
             - lambda: |-
                 id(wifi_connection) = false;
 
+
 time:
-  - platform: homeassistant
+  - platform: sntp
     id: esptime
     on_time:
       - seconds: "*"
         then:
           - script.execute: clock_update
-
-
-# time:
-#   - platform: sntp
-#     id: esptime
-#     on_time:
-#       - seconds: "*"
-#         then:
-#           - script.execute: clock_update
 
 ################################################################################
 # Sensors
@@ -203,11 +192,6 @@ sensor:
                 (to_string(seconds) + "s")
               ).c_str();
 
-  # - platform: homeassistant
-  #   id: battery_soc
-  #   entity_id: sensor.1be6e4_remaining_battery_capacity
-  #   internal: true
-
 ################################################################################
 # Text Sensors
 ################################################################################
@@ -232,6 +216,12 @@ text_sensor:
     name: Uptime Human Readable
     id: ${device_internal_name}_uptime_human
     icon: mdi:clock-start
+
+image:
+  - file: "image.png"
+    id: my_image
+    resize: 320x480
+    type: RGB24
 
 color:
   - id: my_red
@@ -313,13 +303,13 @@ script:
           value: !lambda |-
             auto now = id(esptime).now();
             return std::fmod(now.hour, 12) * 60 + now.minute;
+      - component.update: main_display
 
 lvgl:
   log_level: none #INFO
   color_depth: 16
   buffer_size: 25%
   bg_color: my_gray
-  # text_font: UNSCII_8
   text_font: arial_12
   width: 320
   height: 480
@@ -560,7 +550,8 @@ lvgl:
                       r_mod: -10
             on_click:
                 - lvgl.widget.show: message_box
-            
+         
+
 captive_portal:
 
 spi:
@@ -589,7 +580,7 @@ display:
       height: 480
     cs_pin: 45
     reset_pin: 16
-    rotation: 90  ### 90 & 270 need swap_xy to be true in the touchscreen section
+    rotation: 270  ### 90 & 270 need swap_xy to be true in the touchscreen section
     transform:
       mirror_x: false
       mirror_y: false
@@ -608,9 +599,6 @@ touchscreen:
       mirror_x: false
       mirror_y: false
       swap_xy: true # true for rotation 90 or 270 
-
-
-   
 
 
 
