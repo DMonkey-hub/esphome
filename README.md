@@ -1,3 +1,9 @@
+<b>Warning: this demo works fine under ESPHome V9.2.0 but something has changed at V10.0  - now the touchpad coordinates are out so the buttons don't press in the right location.
+You can wind back the ESPHome version using this add-on... 
+https://github.com/khenderick/esphome-legacy-addons
+</b>
+<br>
+
 This work is based on the driver developed by @buglloc for the T-Display_S3_Long display...<br>
 https://github.com/buglloc/esphome-components/tree/main<br>
 for the JC3248W535EN device there were problems with updating only the changed portion of the screen, rotation and the touchscreen.
