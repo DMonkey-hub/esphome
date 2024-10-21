@@ -1,4 +1,4 @@
-<b>Warning: this demo works fine under ESPHome V9.2.0 but something has changed at V10.0  - now the touchpad coordinates are out so the buttons don't press in the right location.
+<b>Warning: this demo works fine under ESPHome 2024.9.2 but something has changed at 2024.10.0  - now the touchpad coordinates are out so the buttons don't press in the right location.
 You can wind back the ESPHome version using this add-on... 
 https://github.com/khenderick/esphome-legacy-addons
 </b>
