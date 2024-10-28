@@ -18,7 +18,7 @@ from esphome.const import (
 
 from esphome.core import coroutine_with_priority
 
-CODEOWNERS = ["@jesserockz", "@nielsnl68"]
+CODEOWNERS = ["@DMonkey-hub", "@jesserockz", "@nielsnl68"]
 DEPENDENCIES = ["display"]
 
 IS_PLATFORM_COMPONENT = True
