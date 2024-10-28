@@ -28,8 +28,8 @@ globals:
 
 external_components:
   - source: github://dmonkey-hub/esphome
-    components: [ axs15231, touchscreen ] 
-    
+    components: [ axs15231, touchscreen ]
+
 ################################################################################
 # Board Configuration
 ################################################################################
@@ -42,6 +42,8 @@ esphome:
   on_boot:
     then:
       - component.update: main_display
+  build_path: /config/esphome/esphome_17_build10
+
 
 psram:
   mode: octal
@@ -260,28 +262,28 @@ color:
     blue: 0%
 
 font:
-  - file: "arial.ttf"
+  - file: "fonts/arial.ttf"
     id: arial_98
     size: 98
-  - file: "arial.ttf"
+  - file: "fonts/arial.ttf"
     id: arial_96
     size: 96
-  - file: "arial.ttf"
+  - file: "fonts/arial.ttf"
     id: arial_134
     size: 134
-  - file: "arial.ttf"
+  - file: "fonts/arial.ttf"
     id: arial_128
     size: 128
-  - file: "arial.ttf"
+  - file: "fonts/arial.ttf"
     id: arial_48
     size: 48
-  - file: "arial.ttf"
+  - file: "fonts/arial.ttf"
     id: arial_36
     size: 36
-  - file: "arial.ttf"
+  - file: "fonts/arial.ttf"
     id: arial_24
     size: 24
-  - file: "arial.ttf"
+  - file: "fonts/arial.ttf"
     id: arial_12
     size: 12
   - file: "gfonts://Roboto"
@@ -361,8 +363,8 @@ lvgl:
 
   widgets:
 
-    - button:
-        x: 60
+    - button:  ########################## bottom buttons
+        x: 40
         y: 260
         #align: center
         width: 50
@@ -381,7 +383,7 @@ lvgl:
             - lvgl.widget.redraw: 
             
     - button:
-        x: 160
+        x: 120
         y: 260
         #align: center
         width: 50
@@ -399,7 +401,7 @@ lvgl:
                 value: 20                
             - lvgl.widget.redraw: 
     - button:
-        x: 260
+        x: 200
         y: 260
         #align: center
         width: 50
@@ -418,7 +420,7 @@ lvgl:
             - lvgl.widget.redraw: 
 
     - button:
-        x: 360
+        x: 280
         y: 260
         #align: center
         width: 50
@@ -436,11 +438,124 @@ lvgl:
                 value: 40                
             - lvgl.widget.redraw: 
 
+    - button:
+        x: 360
+        y: 260
+        #align: center
+        width: 50
+        height: 50
+        id: btn_id5
+        #checkable: true
+        widgets:
+          - label:
+              align: center
+              text: "50"
+        on_click:
+          then:
+            - lvgl.indicator.update:
+                id: soc_needle
+                value: 50                
+            - lvgl.widget.redraw: 
+
+    - button:  ########################## top buttons
+        x: 40
+        y: 10
+        #align: center
+        width: 50
+        height: 50
+        id: btn_id6
+        #checkable: true
+        widgets:
+          - label:
+              align: center
+              text: "60"
+        on_click:
+          then:
+            - lvgl.indicator.update:
+                id: soc_needle
+                value: 60                
+            - lvgl.widget.redraw: 
+            
+    - button:
+        x: 120
+        y: 10
+        #align: center
+        width: 50
+        height: 50
+        id: btn_id7
+        #checkable: true
+        widgets:
+          - label:
+              align: center
+              text: "70"
+        on_click:
+          then:
+            - lvgl.indicator.update:
+                id: soc_needle
+                value: 70                
+            - lvgl.widget.redraw: 
+    - button:
+        x: 200
+        y: 10
+        #align: center
+        width: 50
+        height: 50
+        id: btn_id8
+        #checkable: true
+        widgets:
+          - label:
+              align: center
+              text: "80"
+        on_click:
+          then:
+            - lvgl.indicator.update:
+                id: soc_needle
+                value: 80                
+            - lvgl.widget.redraw: 
+
+    - button:
+        x: 280
+        y: 10
+        #align: center
+        width: 50
+        height: 50
+        id: btn_id9
+        #checkable: true
+        widgets:
+          - label:
+              align: center
+              text: "90"
+        on_click:
+          then:
+            - lvgl.indicator.update:
+                id: soc_needle
+                value: 90                
+            - lvgl.widget.redraw: 
+
+    - button:
+        x: 360
+        y: 10
+        #align: center
+        width: 50
+        height: 50
+        id: btn_id10
+        #checkable: true
+        widgets:
+          - label:
+              align: center
+              text: "100"
+        on_click:
+          then:
+            - lvgl.indicator.update:
+                id: soc_needle
+                value: 100                
+            - lvgl.widget.redraw: 
+
     # Example meter:
     - meter:
         #align: center
         x: 230
-        y: 20
+        y: 60
         width: 200
         height: 200
         widgets:
@@ -486,7 +601,7 @@ lvgl:
         height: 200
         width: 200
         x: 20
-        y: 20
+        y: 60
         pad_all: 4
         bg_opa: 0%
         border_width: 0  
@@ -595,15 +710,21 @@ touchscreen:
   - platform: axs15231
     id: main_touch
     i2c_id: touchscreen_bus
-    update_interval: 50ms
+    #update_interval: 50ms
     display: main_display
     transform:
       mirror_x: false
       mirror_y: false
-      swap_xy: true # true for rotation 90 or 270 
-
-
-
-
+      swap_xy: true # true for rotation 90 or 270
+    on_touch:
+      - lambda: |-
+          ESP_LOGI("Touch", "Touch detected at x=%d, y=%d", touch.x, touch.y);
+    on_update:
+      - lambda: |-
+            for (auto touch: touches)  {
+                if (touch.state <= 2) {
+                  ESP_LOGI("Touch points:", "x=%d, y=%d x.raw=%d, y.raw=%d", touch.x, touch.y, touch.x_raw, touch.y_raw);
+                }
+            }  
 
 
