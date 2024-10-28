@@ -17,6 +17,6 @@ good luck
 <br>
 <br>
 The image below shows the example included.
-The buttons 10-40 resets the Test meter to that value. Touching the meter resets it to zero. Touching the clock displays a simple message box.
+The buttons 10-100 resets the Test meter to that value. Touching the meter resets it to zero. Touching the clock displays a simple message box.
 That's it. Enjoy. <br><br>
 <img src="LVGL%20example.jpg" alt="Example image">
