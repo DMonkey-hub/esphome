@@ -19,5 +19,11 @@ good luck
 The image below shows the example included.
 The buttons 10-100 resets the Test meter to that value. Touching the meter resets it to zero. Touching the clock displays a simple message box.
 That's it. Enjoy. <br><br>
-<img src="LVGL%20example.jpg" alt="Example image">
+<img src="LVGL%20example.jpg" alt="Example image"><br><br>
+Tested using...
+Esphome: 2024.10.2
+Core: 2024.10.4
+Supervisor: 2024.10.3
+Operating System: 13.2
+Frontend: 20241002.4
 
