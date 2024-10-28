@@ -20,8 +20,6 @@ void Touchscreen::call_setup() {
   if (this->display_ != nullptr) {
     this->display_width_ = this->display_->get_native_width();
     this->display_height_ = this->display_->get_native_height();
-//    this->display_width_ = 480;
-///    this->display_height_ = 320;
   }
   PollingComponent::call_setup();
 }
