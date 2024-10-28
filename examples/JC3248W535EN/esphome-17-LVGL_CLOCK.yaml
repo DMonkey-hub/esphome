@@ -28,7 +28,7 @@ globals:
 
 external_components:
   - source: github://dmonkey-hub/esphome
-    components: [ axs15231 ] 
+    components: [ axs15231, touchscreen ] 
     
 ################################################################################
 # Board Configuration
