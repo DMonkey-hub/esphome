@@ -1,0 +1,823 @@
+################################################################################
+# Substitution Variables
+################################################################################
+substitutions:
+  device_internal_name: esphome_19
+  device_wifi_name: esphome-19
+  device_friendly_name: ESPHome 19
+  device_ip_address: 192.168.1.19
+  device_sampling_time: 30s
+
+  # glyphs
+  lightbulb:         "\U000F0335"
+  ceiling_light:     "\U000F0769"
+  lamp:              "\U000F06B5"
+  floor_lamp:        "\U000F08DD"
+  string_lights:     "\U000F12BA"
+  track_light:       "\U000F0914"
+  bulkhead_light:    "\U000F1A2F" 
+  led_strip:         "\U000F07D6" 
+  coach_lamp:        "\U000F1020"
+  ceiling_fan_light: "\U000F1798"
+  previous:          "\U0000F053"
+  next:              "\U0000F054"
+  home:              "\U0000F015"
+
+################################################################################
+# Globals
+################################################################################
+globals: ##to set default reboot behavior
+  - id: wifi_connection
+    type: bool
+    restore_value: no
+    initial_value: "false"
+
+
+################################################################################
+# Board Configuration
+################################################################################
+esphome:
+  name: ${device_internal_name}
+  friendly_name: ${device_friendly_name}
+  platformio_options:
+    build_flags: "-DBOARD_HAS_PSRAM"
+    board_build.arduino.memory_type: qio_opi
+    board_build.flash_mode: dio
+    board_upload.maximum_ram_size: 524288
+
+psram:
+  mode: octal
+  speed: 120MHz
+
+esp32:
+  board: esp32-s3-devkitc-1
+  variant: ESP32S3
+  flash_size: 8MB
+  framework:
+    type: esp-idf
+#    platform_version: 6.8.1 # works ok
+    platform_version: 6.9.0
+    version: 5.3.0
+    sdkconfig_options:
+      COMPILER_OPTIMIZATION_SIZE: y
+      CONFIG_ESP32S3_DATA_CACHE_64KB: "y"
+      CONFIG_ESPTOOLPY_FLASHSIZE_8MB: "y"
+      CONFIG_FREERTOS_HZ: "1000"
+      CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240: y
+      CONFIG_ESPTOOLPY_FLASHMODE_QIO: y
+      CONFIG_ESPTOOLPY_FLASHFREQ_120M: y
+      CONFIG_SPIRAM_MODE_OCT: y
+      CONFIG_IDF_EXPERIMENTAL_FEATURES: y
+      CONFIG_SPIRAM_SPEED_120M: y
+      CONFIG_SPIRAM_FETCH_INSTRUCTIONS: y
+      CONFIG_SPIRAM_RODATA: y
+      CONFIG_ESP32S3_DATA_CACHE_LINE_64B: y
+      CONFIG_COMPILER_OPTIMIZATION_PERF: y
+
+################################################################################
+# Enable logging
+################################################################################
+logger:
+  logs:
+    component: ERROR
+
+################################################################################
+# Enable Home Assistant API
+################################################################################
+api:
+  reboot_timeout: 0s
+  encryption:
+    key: !secret api_encryption_key
+
+################################################################################
+# OTA
+################################################################################
+ota:
+  platform: esphome
+  password: !secret web_server_password
+
+################################################################################
+# WiFi
+################################################################################
+wifi:
+  networks:
+    - ssid: !secret wifi_ssid
+      password: !secret wifi_password
+  manual_ip:
+    static_ip: ${device_ip_address}
+    gateway: !secret gateway_address
+    subnet: !secret subnet_address
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    # ssid: ${device_wifi_name}
+    password: !secret web_server_password
+
+captive_portal:
+
+################################################################################
+# Web Server
+################################################################################
+web_server:
+  port: 80
+  version: 2
+  include_internal: true
+  auth:
+    username: !secret web_server_user
+    password: !secret web_server_password
+  local: true
+
+################################################################################
+# IO Extender
+################################################################################
+ch422g:
+  - id: ch422g_hub
+
+################################################################################
+# Switch
+################################################################################
+switch:
+  - platform: restart
+    name: "Restart"
+    id: device_restart
+  
+  - platform: safe_mode
+    name: Use Safe Mode
+    id: device_safe_mode
+    
+  - platform: gpio
+    id: lcdbacklight
+    name: lcdbacklight
+    pin:
+      ch422g: ch422g_hub
+      number: 2
+      mode:
+        output: true
+      inverted: false
+    restore_mode: ALWAYS_ON
+
+################################################################################
+# Interval
+################################################################################
+interval:
+  - interval: 10s
+    then:
+      - if:
+          condition:
+            wifi.connected:
+          then:
+            - lambda: |-
+                id(wifi_connection) = true;
+          else:
+            - lambda: |-
+                id(wifi_connection) = false;
+
+time:
+  - platform: homeassistant
+    id: esptime
+    on_time:
+      - seconds: "*"
+        then:
+          - script.execute: clock_update
+
+################################################################################
+# Sensors
+################################################################################
+sensor:
+  # WiFi
+  - platform: wifi_signal
+    name: "WiFi Signal Sensor"
+    id: ${device_internal_name}_wifi_signal_sensor
+    update_interval: ${device_sampling_time}
+
+  # Uptime
+  - platform: uptime
+    name: "Uptime Sensor"
+    id: ${device_internal_name}_uptime_sensor
+    update_interval: ${device_sampling_time}
+    internal: true
+    on_raw_value:
+      then:
+        - text_sensor.template.publish:
+            id: ${device_internal_name}_uptime_human
+            state: !lambda |-
+              int seconds = round(id(${device_internal_name}_uptime_sensor).raw_state);
+              int days = seconds / (24 * 3600);
+              seconds = seconds % (24 * 3600);
+              int hours = seconds / 3600;
+              seconds = seconds % 3600;
+              int minutes = seconds /  60;
+              seconds = seconds % 60;
+              return (
+                (days ? to_string(days) + "d " : "") +
+                (hours ? to_string(hours) + "h " : "") +
+                (minutes ? to_string(minutes) + "m " : "") +
+                (to_string(seconds) + "s")
+              ).c_str();
+
+  - platform: homeassistant
+    id: battery_charging
+    entity_id: sensor.1be6e4_Battery_Power
+    internal: true
+
+  - platform: homeassistant
+    id: grid_output
+    entity_id: sensor.grid_output
+    internal: true
+
+  - platform: homeassistant
+    id: grid_input
+    entity_id: sensor.grid_input
+    internal: true
+
+  - platform: homeassistant
+    id: solar_gen
+    entity_id: sensor.1be6e4_ac_output_total_power
+    internal: true
+
+  - platform: homeassistant
+    id: home_use
+    entity_id: sensor.1be6e4_total_consumption_power
+    internal: true
+
+  - platform: homeassistant
+    id: battery_soc
+    entity_id: sensor.1be6e4_remaining_battery_capacity
+    internal: true
+
+################################################################################
+# Text Sensors
+################################################################################
+text_sensor:
+  #-------------------------------------------------------------------------------
+  # ESP32 internal sensors
+  #-------------------------------------------------------------------------------
+  - platform: wifi_info
+    ip_address:
+      name: IP Address
+      id: ${device_internal_name}_ip_address
+    ssid:
+      name: Connected SSID
+      id: ${device_internal_name}_connected_ssid
+    mac_address:
+      name: Mac Wifi Address
+      id: ${device_internal_name}_mac_address
+  #-------------------------------------------------------------------------------
+  # Custom Text sensors
+  #-------------------------------------------------------------------------------
+  - platform: template
+    name: Uptime Human Readable
+    id: ${device_internal_name}_uptime_human
+    icon: mdi:clock-start
+
+  - platform: template
+    name: RTC
+    id: label_clock
+
+
+image:
+  - file: "image.png"
+    id: my_image
+    # resize: 320x480
+    type: RGB565
+
+color:
+  - id: my_red
+    red: 100%
+    green: 0%
+    blue: 0%
+  - id: my_pink
+    red: 100%
+    green: 10%
+    blue: 40%
+  - id: my_yellow
+    red: 100%
+    green: 100%
+    blue: 0%
+  - id: my_green
+    red: 0%
+    green: 100%
+    blue: 0%
+  - id: my_blue
+    red: 0%
+    green: 0%
+    blue: 100%
+  - id: my_gray
+    red: 50%
+    green: 50%
+    blue: 50%
+  - id: my_white
+    red: 100%
+    green: 100%
+    blue: 100%
+  - id: my_black
+    red: 0%
+    green: 0%
+    blue: 0%
+
+
+font:
+  - file: "fonts/arial.ttf"
+    id: arial_98
+    size: 98
+  - file: "fonts/arial.ttf"
+    id: arial_96
+    size: 96
+  - file: "fonts/arial.ttf"
+    id: arial_134
+    size: 134
+  - file: "fonts/arial.ttf"
+    id: arial_128
+    size: 128
+  - file: "fonts/arial.ttf"
+    id: arial_48
+    size: 48
+  - file: "fonts/arial.ttf"
+    id: arial_36
+    size: 36
+  - file: "fonts/arial.ttf"
+    id: arial_24
+    size: 24
+  - file: "fonts/arial.ttf"
+    id: arial_12
+    size: 12
+  - file: "gfonts://Roboto"
+    id: roboto10
+    size: 10
+    bpp: 4
+
+script:
+  - id: clock_update
+    then:
+      - lvgl.indicator.update:
+          id: second_hand
+          value: !lambda |-
+            return id(esptime).now().second;
+      - lvgl.indicator.update:
+          id: minute_hand
+          value: !lambda |-
+            return id(esptime).now().minute;
+      - lvgl.indicator.update:
+          id: hour_hand
+          value: !lambda |-
+            auto now = id(esptime).now();
+            return std::fmod(now.hour, 12) * 60 + now.minute;
+
+
+            
+
+
+
+############################################ START OF VLGL
+
+
+lvgl:
+  log_level: none #INFO
+  color_depth: 16
+  buffer_size: 25%
+  bg_color: my_gray
+  text_font: arial_12
+  width: 320
+  height: 480
+  align: center
+  id: screen
+  style_definitions:
+    - id: date_style
+      align: center
+      text_color: 0x000000
+      bg_opa: cover
+      radius: 4
+      pad_all: 2
+
+  theme:
+    button:
+      scroll_on_focus: true
+      #group: general
+      border_width: 2
+      text_font: arial_24
+      outline_pad: 6
+      pressed:
+        border_color: my_yellow
+      checked:
+        border_color: my_blue
+      focused:
+        border_color: my_gray
+    label:
+      text_font: arial_24
+
+  msgboxes:
+  - id: message_box
+    close_button: true
+    title: Message box
+    body:
+      text: "This is a sample message box."
+      bg_color: my_black
+    buttons:
+      - id: msgbox_apply
+        text: "Apply"
+      - id: msgbox_close
+        text: "\uF00D"
+        on_click:
+          then:
+            - lvgl.widget.hide: message_box
+
+
+  widgets:
+    - obj:
+        height: 320
+        width: 480
+        align: center
+        pad_all: 0
+        bg_opa: 0%
+        widgets:
+        - button:  ########################## bottom buttons
+            x: 40
+            y: 260
+            #align: center
+            width: 50
+            height: 50
+            id: btn_id1
+            #checkable: true
+            widgets:
+              - label:
+                  align: center
+                  text: "10"
+            on_click:
+              then:
+                - lvgl.indicator.update:
+                    id: soc_needle
+                    value: 10                
+                - lvgl.widget.redraw: 
+                
+        - button:
+            x: 120
+            y: 260
+            #align: center
+            width: 50
+            height: 50
+            id: btn_id2
+            #checkable: true
+            widgets:
+              - label:
+                  align: center
+                  text: "20"
+            on_click:
+              then:
+                - lvgl.indicator.update:
+                    id: soc_needle
+                    value: 20                
+                - lvgl.widget.redraw: 
+        - button:
+            x: 200
+            y: 260
+            #align: center
+            width: 50
+            height: 50
+            id: btn_id3
+            #checkable: true
+            widgets:
+              - label:
+                  align: center
+                  text: "30"
+            on_click:
+              then:
+                - lvgl.indicator.update:
+                    id: soc_needle
+                    value: 30                
+                - lvgl.widget.redraw: 
+
+        - button:
+            x: 280
+            y: 260
+            #align: center
+            width: 50
+            height: 50
+            id: btn_id4
+            #checkable: true
+            widgets:
+              - label:
+                  align: center
+                  text: "40"
+            on_click:
+              then:
+                - lvgl.indicator.update:
+                    id: soc_needle
+                    value: 40                
+                - lvgl.widget.redraw: 
+
+        - button:
+            x: 360
+            y: 260
+            #align: center
+            width: 50
+            height: 50
+            id: btn_id5
+            #checkable: true
+            widgets:
+              - label:
+                  align: center
+                  text: "50"
+            on_click:
+              then:
+                - lvgl.indicator.update:
+                    id: soc_needle
+                    value: 50                
+                - lvgl.widget.redraw: 
+
+        - button:  ########################## top buttons
+            x: 40
+            y: 10
+            #align: center
+            width: 50
+            height: 50
+            id: btn_id6
+            #checkable: true
+            widgets:
+              - label:
+                  align: center
+                  text: "60"
+            on_click:
+              then:
+                - lvgl.indicator.update:
+                    id: soc_needle
+                    value: 60                
+                - lvgl.widget.redraw: 
+                
+        - button:
+            x: 120
+            y: 10
+            #align: center
+            width: 50
+            height: 50
+            id: btn_id7
+            #checkable: true
+            widgets:
+              - label:
+                  align: center
+                  text: "70"
+            on_click:
+              then:
+                - lvgl.indicator.update:
+                    id: soc_needle
+                    value: 70                
+                - lvgl.widget.redraw: 
+        - button:
+            x: 200
+            y: 10
+            #align: center
+            width: 50
+            height: 50
+            id: btn_id8
+            #checkable: true
+            widgets:
+              - label:
+                  align: center
+                  text: "80"
+            on_click:
+              then:
+                - lvgl.indicator.update:
+                    id: soc_needle
+                    value: 80                
+                - lvgl.widget.redraw: 
+
+        - button:
+            x: 280
+            y: 10
+            #align: center
+            width: 50
+            height: 50
+            id: btn_id9
+            #checkable: true
+            widgets:
+              - label:
+                  align: center
+                  text: "90"
+            on_click:
+              then:
+                - lvgl.indicator.update:
+                    id: soc_needle
+                    value: 90                
+                - lvgl.widget.redraw: 
+
+        - button:
+            x: 360
+            y: 10
+            #align: center
+            width: 50
+            height: 50
+            id: btn_id10
+            #checkable: true
+            widgets:
+              - label:
+                  align: center
+                  text: "100"
+            on_click:
+              then:
+                - lvgl.indicator.update:
+                    id: soc_needle
+                    value: 100                
+                - lvgl.widget.redraw: 
+
+        # Example meter:
+        - meter:
+            #align: center
+            x: 230
+            y: 60
+            width: 200
+            height: 200
+            widgets:
+              - label:
+                  y: 30
+                  align: center
+                  text: "Test"
+            scales:
+              range_from: 0
+              range_to: 100
+              angle_range: 240
+              rotation: 150
+              ticks:
+                count: 51
+                length: 3
+                major:
+                  stride: 5
+                  length: 13
+                  label_gap: 13
+              indicators:
+                - line:
+                    id: soc_needle
+                    width: 2
+                    color: 0xFF0000
+                    r_mod: -4
+                    value: 88
+                - tick_style:
+                    start_value: -10
+                    end_value: 40
+                    color_start: 0x0000bd #FF0000
+                    color_end: 0xbd0000 #0000FF
+
+            # Example action:
+            on_click:
+              then:
+                - lvgl.indicator.update:
+                    id: soc_needle
+                    value: 0                
+                - lvgl.widget.redraw: 
+
+
+        - obj: ######################################### Elegant Clock - https://community.home-assistant.io/t/esphome-elegant-lvgl-clock/772365
+            height: 200
+            width: 200
+            x: 20
+            y: 60
+            pad_all: 4
+            bg_opa: 0%
+            border_width: 0  
+            widgets:
+            - meter:
+                height: 100%
+                width: 100%
+                align: center
+                bg_color: my_white
+
+                scales:
+                  # Minor ticks
+                  - ticks:
+                      width: 2
+                      count: 61
+                      length: 10
+                      color: my_black
+                    range_from: 0
+                    range_to: 60
+                    angle_range: 360
+                    rotation: 270
+
+                    # Minuite hand
+                    indicators:
+                      - line:
+                          id: minute_hand
+                          width: 3
+                          color: my_black
+                          r_mod: -1
+                  # Major ticks
+                  - angle_range: 330
+                    rotation: 300
+                    range_from: 1
+                    range_to: 12
+                    ticks:
+                      width: 3
+                      count: 12
+                      length: 20
+                      color: my_black                       
+
+                  # Hour hand
+                  - angle_range: 360
+                    rotation: 270
+                    range_from: 0
+                    range_to: 720
+                    indicators:
+                      - line:
+                          id: hour_hand
+                          width: 4
+                          color: my_black
+                          r_mod: -40
+
+                  # Second hand
+                  - angle_range: 360
+                    rotation: 270
+                    range_from: 0
+                    range_to: 60
+                    indicators:
+                      - line:
+                          id: second_hand
+                          width: 2
+                          color: my_red
+                          r_mod: -10
+                on_click:
+                    - lvgl.widget.show: message_box
+         
+
+
+########################################################### END OF VLGL
+
+
+i2c:
+  sda: GPIO08
+  scl: GPIO09
+  scan: True
+  id: bus_a
+
+# Define display
+display:
+  - platform: rpi_dpi_rgb
+    id: my_display
+    update_interval: never
+    auto_clear_enabled: false
+    color_order: RGB
+    pclk_frequency: 16MHZ
+    dimensions:
+      width: 800
+      height: 480
+    de_pin:
+      number: 5
+    hsync_pin:
+      number: 46
+      ignore_strapping_warning: true
+    vsync_pin:
+      number: 3
+      ignore_strapping_warning: true
+    pclk_pin: 7
+    pclk_inverted: true
+    reset_pin:
+      ch422g: ch422g_hub
+      number: 3
+#    enable_pin:
+#      ch422g: ch422g_hub
+#      number: 2  
+    hsync_back_porch: 8
+    hsync_front_porch: 8
+    hsync_pulse_width: 4
+    vsync_back_porch: 16
+    vsync_front_porch: 16
+    vsync_pulse_width: 4
+    data_pins:
+      red:
+        - 1         #r3
+        - 2         #r4
+        - 42        #r5
+        - 41        #r6
+        - 40        #r7
+      blue:
+        - 14        #b3
+        - 38        #b4
+        - 18        #b5
+        - 17        #b6
+        - 10        #b7
+      green:
+        - 39        #g2
+        - 0         #g3
+        - 45        #g4
+        - 48        #g5
+        - 47        #g6
+        - 21        #g7
+
+touchscreen:
+  platform: gt911
+  id: my_touch
+  interrupt_pin: GPIO4
+  reset_pin:
+    ch422g: ch422g_hub
+    number: 1
+    mode: OUTPUT
+  on_touch:
+    - lambda: |-
+        ESP_LOGI("Touch", "Touch detected at x=%d, y=%d", touch.x, touch.y);
+  on_update:
+    - lambda: |-
+          for (auto touch: touches)  {
+              if (touch.state <= 2) {
+                ESP_LOGI("Touch points:", "id=%d x=%d, y=%d x.raw=%d, y.raw=%d", touch.id, touch.x, touch.y, touch.x_raw, touch.y_raw);
+              }
+          }  
+
+
+
