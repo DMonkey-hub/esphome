@@ -27,4 +27,5 @@ Supervisor: 2024.10.3
 Operating System: 13.2
 Frontend: 20241002.4
 
-I've also uploaded this <a target="_blank" href="https://github.com/DMonkey-hub/esphome/tree/main/examples/ESP32-S3-Touch-LCD-7">test</a> example using the <a target="_blank" href="https://www.waveshare.com/wiki/ESP32-S3-Touch-LCD-7">ESP32-S3-Touch-LCD-7</a> device in case it helps others.
+I've also uploaded this <a target="_blank" href="https://github.com/DMonkey-hub/esphome/tree/main/examples/ESP32-S3-Touch-LCD-7">test</a> example using the <a target="_blank" href="https://www.waveshare.com/wiki/ESP32-S3-Touch-LCD-7">ESP32-S3-Touch-LCD-7</a> device in case it helps others.<br><br>
+<img src="ESP32-S3-Touch-LCD-7.jpg" alt="LCD-7 Example image"><br><br>
