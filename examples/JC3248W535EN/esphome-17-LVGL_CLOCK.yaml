@@ -7,6 +7,7 @@ substitutions:
   device_friendly_name: ESPHome 17
   device_ip_address: 192.168.1.17
   device_sampling_time: 30s
+  friendly_name: JC3248W535
 
 ################################################################################
 # Globals
@@ -25,43 +26,22 @@ globals:
     type: int
     initial_value: "0"
 
-
-external_components:
-  - source: github://dmonkey-hub/esphome
-    components: [ axs15231, touchscreen ]
-
-################################################################################
-# Board Configuration
-################################################################################
-esphome:
-  name: ${device_internal_name}
-  friendly_name: ${device_friendly_name}
-  platformio_options:
-    build_flags: "-DBOARD_HAS_PSRAM"
-    board_build.arduino.memory_type: qio_opi
-  on_boot:
-    then:
-      - component.update: main_display
-  build_path: /config/esphome/esphome_17_build10
-
-
-psram:
-  mode: octal
-  speed: 120MHz
-
 esp32:
   board: esp32s3box
-  variant: ESP32S3
-  flash_size: 8MB
   framework:
     type: esp-idf
+    sdkconfig_options:
+      CONFIG_ESP32S3_DEFAULT_CPU_FREQ_240: "y"
+      CONFIG_ESP32S3_DATA_CACHE_64KB: "y"
+      CONFIG_SPIRAM_FETCH_INSTRUCTIONS: y
+      CONFIG_SPIRAM_RODATA: y
 
 ################################################################################
 # Enable logging
 ################################################################################
 logger:
   logs:
-    component: ERROR
+    component: ERROR #DEBUG #ERROR
 
 ################################################################################
 # Enable Home Assistant API
@@ -107,51 +87,58 @@ web_server:
   local: true
 
 
+esphome:
+  name: jc3248w535
+  friendly_name: ${friendly_name]
+  platformio_options:
+    build_unflags: -Werror=all
+    board_build.flash_mode: dio
 
-################################################################################
-# Output
-################################################################################
-output:
-  - platform: gpio
-    pin:
-      number: GPIO01
-    id: lcdbacklight
+psram:
+  mode: octal
+  speed: 80MHz
 
+spi:
+  id: display_qspi
+  type: quad
+  clk_pin: 47
+  data_pins: [21,48,40,39]
 
-################################################################################
-# Switch
-################################################################################
-switch:
-  - platform: restart
-    name: "Restart"
-    id: device_restart
-  
-  - platform: safe_mode
-    name: Use Safe Mode
-    id: device_safe_mode
+power_supply:
+  id: backlight_id
+  pin: 1
+  enable_on_boot: true
 
-  - platform: output
-    name: "LCD LED"
-    output: lcdbacklight
-    id: switch_lcdbacklight
-    restore_mode: ALWAYS_ON
-  
-################################################################################
-# Interval
-################################################################################
-interval:
-  - interval: 10s
-    then:
-      - if:
-          condition:
-            wifi.connected:
-          then:
-            - lambda: |-
-                id(wifi_connection) = true;
-          else:
-            - lambda: |-
-                id(wifi_connection) = false;
+display:
+  - platform: qspi_dbi
+    model: CUSTOM
+    data_rate: 40MHz
+    id: main_display
+    dimensions:
+      height: 480
+      width: 320
+    transform:
+      mirror_x: false
+      mirror_y: false
+    cs_pin:
+      number: 45
+      ignore_strapping_warning: true
+    auto_clear_enabled: false
+    update_interval: never
+    draw_from_origin: true
+    rotation: 90 ################ must change the touchscreen settings below to match
+    init_sequence:
 
+i2c:
+  sda: 4
+  scl: 8
+
+touchscreen:
+  platform: axs15231
+  transform:
+    swap_xy: true   # 0=false, 90=true, 180=false, 270=true
+    mirror_x: true   # 0=false, 90=true, 180=true, 270=false
+    mirror_y: false   # 0=false, 90=false, 180=true, 270=true
 
 time:
   - platform: homeassistant
@@ -160,72 +147,6 @@ time:
       - seconds: "*"
         then:
           - script.execute: clock_update
-
-################################################################################
-# Sensors
-################################################################################
-sensor:
-  # WiFi
-  - platform: wifi_signal
-    name: "WiFi Signal Sensor"
-    id: ${device_internal_name}_wifi_signal_sensor
-    update_interval: ${device_sampling_time}
-
-  # Uptime
-  - platform: uptime
-    name: "Uptime Sensor"
-    id: ${device_internal_name}_uptime_sensor
-    update_interval: ${device_sampling_time}
-    internal: true
-    on_raw_value:
-      then:
-        - text_sensor.template.publish:
-            id: ${device_internal_name}_uptime_human
-            state: !lambda |-
-              int seconds = round(id(${device_internal_name}_uptime_sensor).raw_state);
-              int days = seconds / (24 * 3600);
-              seconds = seconds % (24 * 3600);
-              int hours = seconds / 3600;
-              seconds = seconds % 3600;
-              int minutes = seconds /  60;
-              seconds = seconds % 60;
-              return (
-                (days ? to_string(days) + "d " : "") +
-                (hours ? to_string(hours) + "h " : "") +
-                (minutes ? to_string(minutes) + "m " : "") +
-                (to_string(seconds) + "s")
-              ).c_str();
-
-################################################################################
-# Text Sensors
-################################################################################
-text_sensor:
-  #-------------------------------------------------------------------------------
-  # ESP32 internal sensors
-  #-------------------------------------------------------------------------------
-  - platform: wifi_info
-    ip_address:
-      name: IP Address
-      id: ${device_internal_name}_ip_address
-    ssid:
-      name: Connected SSID
-      id: ${device_internal_name}_connected_ssid
-    mac_address:
-      name: Mac Wifi Address
-      id: ${device_internal_name}_mac_address
-  #-------------------------------------------------------------------------------
-  # Custom Text sensors
-  #-------------------------------------------------------------------------------
-  - platform: template
-    name: Uptime Human Readable
-    id: ${device_internal_name}_uptime_human
-    icon: mdi:clock-start
-
-image:
-  - file: "image.png"
-    id: my_image
-    resize: 320x480
-    type: RGB24
 
 color:
   - id: my_red
@@ -308,6 +229,7 @@ script:
             auto now = id(esptime).now();
             return std::fmod(now.hour, 12) * 60 + now.minute;
       - component.update: main_display
+
 
 lvgl:
   log_level: none #INFO
@@ -667,64 +589,5 @@ lvgl:
                       r_mod: -10
             on_click:
                 - lvgl.widget.show: message_box
-         
-
-captive_portal:
-
-spi:
-  - id: display_qspi
-    type: quad
-    interface: hardware
-    clk_pin: 47
-    data_pins:
-      - 21
-      - 48
-      - 40
-      - 39
-
-i2c:
-  sda: 4
-  scl: 8
-  id: touchscreen_bus
-  frequency: 800khz
-
-display:
-  - platform: axs15231
-    id: main_display
-    spi_id: display_qspi
-    dimensions: # this remains the same even after rotation
-      width: 320
-      height: 480
-    cs_pin: 45
-    reset_pin: 16
-    rotation: 270  ### 90 & 270 need swap_xy to be true in the touchscreen section
-    transform:
-      mirror_x: false
-      mirror_y: false
-      swap_xy: false
-    auto_clear_enabled: false
-    update_interval: never
-    # show_test_card: true
-
-touchscreen:
-  - platform: axs15231
-    id: main_touch
-    i2c_id: touchscreen_bus
-    #update_interval: 50ms
-    display: main_display
-    transform:
-      mirror_x: false
-      mirror_y: false
-      swap_xy: true # true for rotation 90 or 270
-    on_touch:
-      - lambda: |-
-          ESP_LOGI("Touch", "Touch detected at x=%d, y=%d", touch.x, touch.y);
-    on_update:
-      - lambda: |-
-            for (auto touch: touches)  {
-                if (touch.state <= 2) {
-                  ESP_LOGI("Touch points:", "x=%d, y=%d x.raw=%d, y.raw=%d", touch.x, touch.y, touch.x_raw, touch.y_raw);
-                }
-            }  
 
 
