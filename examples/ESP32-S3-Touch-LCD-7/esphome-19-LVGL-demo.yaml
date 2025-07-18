@@ -2,10 +2,10 @@
 # Substitution Variables
 ################################################################################
 substitutions:
-  device_internal_name: esphome21
-  device_wifi_name: esphome-21
-  device_friendly_name: ESPHome 21
-  device_ip_address: 192.168.1.21
+  device_internal_name: esphome19
+  device_wifi_name: esphome-19
+  device_friendly_name: ESPHome 19
+  device_ip_address: 192.168.1.19
   device_sampling_time: 30s
 
 ################################################################################
