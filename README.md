@@ -1,4 +1,4 @@
-I've updated this example to use the native driver 
+I've updated this example to use ESPHome 2025.7.1 - there was a lot broken during the last 6 months
 <br>
 <br>
 good luck
