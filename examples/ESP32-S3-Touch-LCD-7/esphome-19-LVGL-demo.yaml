@@ -2,26 +2,11 @@
 # Substitution Variables
 ################################################################################
 substitutions:
-  device_internal_name: esphome_19
-  device_wifi_name: esphome-19
-  device_friendly_name: ESPHome 19
-  device_ip_address: 192.168.1.19
+  device_internal_name: esphome21
+  device_wifi_name: esphome-21
+  device_friendly_name: ESPHome 21
+  device_ip_address: 192.168.1.21
   device_sampling_time: 30s
-
-  # glyphs
-  lightbulb:         "\U000F0335"
-  ceiling_light:     "\U000F0769"
-  lamp:              "\U000F06B5"
-  floor_lamp:        "\U000F08DD"
-  string_lights:     "\U000F12BA"
-  track_light:       "\U000F0914"
-  bulkhead_light:    "\U000F1A2F" 
-  led_strip:         "\U000F07D6" 
-  coach_lamp:        "\U000F1020"
-  ceiling_fan_light: "\U000F1798"
-  previous:          "\U0000F053"
-  next:              "\U0000F054"
-  home:              "\U0000F015"
 
 ################################################################################
 # Globals
@@ -45,18 +30,23 @@ esphome:
     board_build.flash_mode: dio
     board_upload.maximum_ram_size: 524288
 
+external_components:
+  - source: github://pr#9605 # temp fix for meter rotation
+    components: [lvgl]
+    refresh: 1h
+
 psram:
   mode: octal
   speed: 120MHz
 
 esp32:
-  board: esp32-s3-devkitc-1
-  variant: ESP32S3
+  board: esp32s3box
+  variant: esp32s3
   flash_size: 8MB
+  cpu_frequency : 240MHz
   framework:
     type: esp-idf
     sdkconfig_options:
-      COMPILER_OPTIMIZATION_SIZE: y
       CONFIG_ESP32S3_DATA_CACHE_64KB: "y"
       CONFIG_ESPTOOLPY_FLASHSIZE_8MB: "y"
       CONFIG_FREERTOS_HZ: "1000"
@@ -69,7 +59,12 @@ esp32:
       CONFIG_SPIRAM_FETCH_INSTRUCTIONS: y
       CONFIG_SPIRAM_RODATA: y
       CONFIG_ESP32S3_DATA_CACHE_LINE_64B: y
+      #CONFIG_COMPILER_OPTIMIZATION_SIZE: y
       CONFIG_COMPILER_OPTIMIZATION_PERF: y
+      #CONFIG_COMPILER_OPTIMIZATION_DEBUG: y
+    advanced:
+      enable_idf_experimental_features: True
+
 
 ################################################################################
 # Enable logging
@@ -371,7 +366,6 @@ script:
 lvgl:
   log_level: none #INFO
   color_depth: 16
-  buffer_size: 25%
   bg_color: my_gray
   text_font: arial_12
   width: 320
