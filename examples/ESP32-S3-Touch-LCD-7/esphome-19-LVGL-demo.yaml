@@ -1,4 +1,4 @@
-# updated to 2025.7.1
+# updated to 2025.7.2
 ################################################################################
 # Substitution Variables
 ################################################################################
@@ -30,11 +30,6 @@ esphome:
     board_build.arduino.memory_type: qio_opi
     board_build.flash_mode: dio
     board_upload.maximum_ram_size: 524288
-
-external_components:
-  - source: github://pr#9605 # temp fix for meter rotation
-    components: [lvgl]
-    refresh: 1h
 
 psram:
   mode: octal
