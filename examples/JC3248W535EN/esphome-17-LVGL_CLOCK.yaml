@@ -2,12 +2,11 @@
 # Substitution Variables
 ################################################################################
 substitutions:
-  device_internal_name: esphome_17
+  device_internal_name: esphome17
   device_wifi_name: esphome-17
   device_friendly_name: ESPHome 17
   device_ip_address: 192.168.1.17
   device_sampling_time: 30s
-  friendly_name: JC3248W535
 
 ################################################################################
 # Globals
@@ -26,15 +25,49 @@ globals:
     type: int
     initial_value: "0"
 
+
+################################################################################
+# Board Configuration
+################################################################################
+esphome:
+  name: ${device_internal_name}
+  friendly_name: ${device_friendly_name}
+  platformio_options:
+    build_flags: "-DBOARD_HAS_PSRAM"
+    board_build.arduino.memory_type: qio_opi
+  on_boot:
+    priority: 800
+    then:
+
+psram:
+  mode: octal
+  speed: 120MHz
+
 esp32:
   board: esp32s3box
+  variant: esp32s3
+  flash_size: 8MB
+  cpu_frequency : 240MHz
   framework:
     type: esp-idf
     sdkconfig_options:
-      CONFIG_ESP32S3_DEFAULT_CPU_FREQ_240: "y"
       CONFIG_ESP32S3_DATA_CACHE_64KB: "y"
+      CONFIG_ESPTOOLPY_FLASHSIZE_8MB: "y"
+      CONFIG_FREERTOS_HZ: "1000"
+      CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240: y
+      CONFIG_ESPTOOLPY_FLASHMODE_QIO: y
+      CONFIG_ESPTOOLPY_FLASHFREQ_120M: y
+      CONFIG_SPIRAM_MODE_OCT: y
+      CONFIG_IDF_EXPERIMENTAL_FEATURES: y
+      CONFIG_SPIRAM_SPEED_120M: y
       CONFIG_SPIRAM_FETCH_INSTRUCTIONS: y
       CONFIG_SPIRAM_RODATA: y
+      CONFIG_ESP32S3_DATA_CACHE_LINE_64B: y
+      #CONFIG_COMPILER_OPTIMIZATION_SIZE: y
+      CONFIG_COMPILER_OPTIMIZATION_PERF: y
+      #CONFIG_COMPILER_OPTIMIZATION_DEBUG: y
+    advanced:
+      enable_idf_experimental_features: True
 
 ################################################################################
 # Enable logging
@@ -87,58 +120,51 @@ web_server:
   local: true
 
 
-esphome:
-  name: jc3248w535
-  friendly_name: ${friendly_name]
-  platformio_options:
-    build_unflags: -Werror=all
-    board_build.flash_mode: dio
 
-psram:
-  mode: octal
-  speed: 80MHz
+################################################################################
+# Output
+################################################################################
+output:
+  - platform: gpio
+    pin:
+      number: GPIO01
+    id: lcdbacklight
 
-spi:
-  id: display_qspi
-  type: quad
-  clk_pin: 47
-  data_pins: [21,48,40,39]
 
-power_supply:
-  id: backlight_id
-  pin: 1
-  enable_on_boot: true
+################################################################################
+# Switch
+################################################################################
+switch:
+  - platform: restart
+    name: "Restart"
+    id: device_restart
+  
+  - platform: safe_mode
+    name: Use Safe Mode
+    id: device_safe_mode
 
-display:
-  - platform: qspi_dbi
-    model: CUSTOM
-    data_rate: 40MHz
-    id: main_display
-    dimensions:
-      height: 480
-      width: 320
-    transform:
-      mirror_x: false
-      mirror_y: false
-    cs_pin:
-      number: 45
-      ignore_strapping_warning: true
-    auto_clear_enabled: false
-    update_interval: never
-    draw_from_origin: true
-    rotation: 90 ################ must change the touchscreen settings below to match
-    init_sequence:
+  - platform: output
+    name: "LCD LED"
+    output: lcdbacklight
+    id: switch_lcdbacklight
+    restore_mode: ALWAYS_ON
+  
 
-i2c:
-  sda: 4
-  scl: 8
-
-touchscreen:
-  platform: axs15231
-  transform:
-    swap_xy: true   # 0=false, 90=true, 180=false, 270=true
-    mirror_x: true   # 0=false, 90=true, 180=true, 270=false
-    mirror_y: false   # 0=false, 90=false, 180=true, 270=true
+################################################################################
+# Interval
+################################################################################
+interval:
+  - interval: 10s
+    then:
+      - if:
+          condition:
+            wifi.connected:
+          then:
+            - lambda: |-
+                id(wifi_connection) = true;
+          else:
+            - lambda: |-
+                id(wifi_connection) = false;
 
 time:
   - platform: homeassistant
@@ -147,6 +173,80 @@ time:
       - seconds: "*"
         then:
           - script.execute: clock_update
+
+
+# time:
+#   - platform: sntp
+#     id: esptime
+#     on_time:
+#       - seconds: "*"
+#         then:
+#           - script.execute: clock_update
+
+################################################################################
+# Sensors
+################################################################################
+sensor:
+  # WiFi
+  - platform: wifi_signal
+    name: "WiFi Signal Sensor"
+    id: ${device_internal_name}_wifi_signal_sensor
+    update_interval: ${device_sampling_time}
+
+  # Uptime
+  - platform: uptime
+    name: "Uptime Sensor"
+    id: ${device_internal_name}_uptime_sensor
+    update_interval: ${device_sampling_time}
+    internal: true
+    on_raw_value:
+      then:
+        - text_sensor.template.publish:
+            id: ${device_internal_name}_uptime_human
+            state: !lambda |-
+              int seconds = round(id(${device_internal_name}_uptime_sensor).raw_state);
+              int days = seconds / (24 * 3600);
+              seconds = seconds % (24 * 3600);
+              int hours = seconds / 3600;
+              seconds = seconds % 3600;
+              int minutes = seconds /  60;
+              seconds = seconds % 60;
+              return (
+                (days ? to_string(days) + "d " : "") +
+                (hours ? to_string(hours) + "h " : "") +
+                (minutes ? to_string(minutes) + "m " : "") +
+                (to_string(seconds) + "s")
+              ).c_str();
+
+  # - platform: homeassistant
+  #   id: battery_soc
+  #   entity_id: sensor.1be6e4_remaining_battery_capacity
+  #   internal: true
+
+################################################################################
+# Text Sensors
+################################################################################
+text_sensor:
+  #-------------------------------------------------------------------------------
+  # ESP32 internal sensors
+  #-------------------------------------------------------------------------------
+  - platform: wifi_info
+    ip_address:
+      name: IP Address
+      id: ${device_internal_name}_ip_address
+    ssid:
+      name: Connected SSID
+      id: ${device_internal_name}_connected_ssid
+    mac_address:
+      name: Mac Wifi Address
+      id: ${device_internal_name}_mac_address
+  #-------------------------------------------------------------------------------
+  # Custom Text sensors
+  #-------------------------------------------------------------------------------
+  - platform: template
+    name: Uptime Human Readable
+    id: ${device_internal_name}_uptime_human
+    icon: mdi:clock-start
 
 color:
   - id: my_red
@@ -228,8 +328,8 @@ script:
           value: !lambda |-
             auto now = id(esptime).now();
             return std::fmod(now.hour, 12) * 60 + now.minute;
-      - component.update: main_display
 
+################################################################ START OF VLGL
 
 lvgl:
   log_level: none #INFO
@@ -589,5 +689,59 @@ lvgl:
                       r_mod: -10
             on_click:
                 - lvgl.widget.show: message_box
+
+################################################################ END OF VLGL
+
+            
+captive_portal:
+
+spi:
+  - id: display_qspi
+    type: quad
+    interface: hardware
+    clk_pin: 47
+    data_pins:
+      - 21
+      - 48
+      - 40
+      - 39
+
+i2c:
+  sda: 4
+  scl: 8
+  id: touchscreen_bus
+  frequency: 800khz
+
+display:
+  - platform: qspi_dbi
+    model: JC4832W535
+    id: main_display
+    data_rate: 40MHz
+    rotation: 90
+    dimensions:
+      height: 480
+      width: 320
+    cs_pin:
+      number: 45
+      ignore_strapping_warning: true
+
+touchscreen:
+  - platform: axs15231
+    id: main_touch
+    display: main_display
+    i2c_id: touchscreen_bus
+    transform:
+      swap_xy: true
+      mirror_y: true
+    calibration:
+      x_min: 0
+      x_max: 480
+      y_min: 0
+      y_max: 320
+   
+
+
+
+
 
 
