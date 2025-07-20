@@ -1,4 +1,6 @@
 <br>
+I've updated this example to use ESPHome 2025.7.2 - there was a lot broken during the last 6 months
+<br><br>
 good luck
 <br>
 <br>
@@ -13,6 +15,6 @@ Operating System: 14.1<br>
 Frontend: 20241127.8<br>
 <br>
 I've also uploaded this <a target="_blank" href="https://github.com/DMonkey-hub/esphome/tree/main/examples/ESP32-S3-Touch-LCD-7">test</a> example using the <a target="_blank" href="https://www.waveshare.com/wiki/ESP32-S3-Touch-LCD-7">ESP32-S3-Touch-LCD-7</a> device in case it helps others.<br><br>
-I've updated this example to use ESPHome 2025.7.1 - there was a lot broken during the last 6 months
+I've updated this example to use ESPHome 2025.7.2 - there was a lot broken during the last 6 months
 <br><br>
 <img src="ESP32-S3-Touch-LCD-7.jpg" alt="LCD-7 Example image"><br><br>
