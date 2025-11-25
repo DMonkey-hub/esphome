@@ -8,4 +8,5 @@ The example esphome-LVGL-example
 there is the YAML file
 and a photo of the display contents after successful compilation
 
-<img src="../../LVGL%20example.jpg" alt="Example image"><br><br>
+<img src="../../LVGL%20example.jpg" alt="Example image">
+
