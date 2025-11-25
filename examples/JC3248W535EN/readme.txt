@@ -8,6 +8,6 @@ The example esphome-LVGL-example
 there is the YAML file
 and a photo of the display contents after successful compilation
 
-<img src="../../LVGL%20example.jpg" alt="Example image">
+https://github.com/DMonkey-hub/esphome/blob/main/LVGL%20example.jpg
 
 
