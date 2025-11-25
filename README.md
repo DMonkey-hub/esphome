@@ -1,5 +1,5 @@
 <br>
-I've updated this example to use ESPHome 2025.11.0 - incorporating the work of <a target="_blank" href="https://community.home-assistant.io/u/gingermist">gingermist</a> and <a target="_blank" href="https://community.home-assistant.io/u/andrew_NH">andrew_NH</a>
+I've updated this example to use ESPHome 2025.11.0 - incorporating the work of <a target="_blank" href="https://community.home-assistant.io/t/waveshare-esp32-s3-touch-lcd-7/789584/90?u=derham">gingermist</a> and <a target="_blank" href="https://community.home-assistant.io/u/andrew_NH">andrew_NH</a>
 <br><br>
 good luck
 <br>
