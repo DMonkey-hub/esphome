@@ -10,3 +10,4 @@ and a photo of the display contents after successful compilation
 
 <img src="../../LVGL%20example.jpg" alt="Example image">
 
+
