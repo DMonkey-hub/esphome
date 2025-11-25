@@ -9,10 +9,12 @@ The buttons 10-100 resets the Test meter to that value. Touching the meter reset
 That's it. Enjoy. <br><br>
 <img src="LVGL%20example.jpg" alt="Example image"><br><br>
 Tested using...<br>
-Core: 2024.12.5<br>
-Supervisor: 2024.12.0<br>
-Operating System: 14.1<br>
-Frontend: 20241127.8<br>
+Installation method Home Assistant OS<br>
+Core: 2025.11.3<br>
+Supervisor: 2025.11.4<br>
+Operating System: 16.3<br>
+Frontend: 20251105.1<br>
+ESPhome: 2025.11.0
 <br>
 I've also uploaded this <a target="_blank" href="https://github.com/DMonkey-hub/esphome/tree/main/examples/ESP32-S3-Touch-LCD-7">test</a> example using the <a target="_blank" href="https://www.waveshare.com/wiki/ESP32-S3-Touch-LCD-7">ESP32-S3-Touch-LCD-7</a> device in case it helps others.<br><br>
 I've updated this example to use ESPHome 2025.11.0
