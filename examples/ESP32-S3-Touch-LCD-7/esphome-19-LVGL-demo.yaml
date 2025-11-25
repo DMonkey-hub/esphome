@@ -1,13 +1,27 @@
-# updated to 2025.7.2
 ################################################################################
 # Substitution Variables
 ################################################################################
 substitutions:
-  device_internal_name: esphome19
+  device_internal_name: esphome_19
   device_wifi_name: esphome-19
   device_friendly_name: ESPHome 19
   device_ip_address: 192.168.1.19
   device_sampling_time: 30s
+
+  # glyphs
+  lightbulb:         "\U000F0335"
+  ceiling_light:     "\U000F0769"
+  lamp:              "\U000F06B5"
+  floor_lamp:        "\U000F08DD"
+  string_lights:     "\U000F12BA"
+  track_light:       "\U000F0914"
+  bulkhead_light:    "\U000F1A2F" 
+  led_strip:         "\U000F07D6" 
+  coach_lamp:        "\U000F1020"
+  ceiling_fan_light: "\U000F1798"
+  previous:          "\U0000F053"
+  next:              "\U0000F054"
+  home:              "\U0000F015"
 
 ################################################################################
 # Globals
@@ -23,44 +37,21 @@ globals: ##to set default reboot behavior
 # Board Configuration
 ################################################################################
 esphome:
-  name: ${device_internal_name}
+  name: esp32-s3-lcd-display
   friendly_name: ${device_friendly_name}
   platformio_options:
-    build_flags: "-DBOARD_HAS_PSRAM"
-    board_build.arduino.memory_type: qio_opi
-    board_build.flash_mode: dio
     board_upload.maximum_ram_size: 524288
 
 psram:
   mode: octal
-  speed: 120MHz
+  speed: 80Mhz
 
 esp32:
-  board: esp32s3box
   variant: esp32s3
-  flash_size: 8MB
-  cpu_frequency : 240MHz
+  flash_size: 16MB
+  cpu_frequency: 240MHz
   framework:
     type: esp-idf
-    sdkconfig_options:
-      CONFIG_ESP32S3_DATA_CACHE_64KB: "y"
-      CONFIG_ESPTOOLPY_FLASHSIZE_8MB: "y"
-      CONFIG_FREERTOS_HZ: "1000"
-      CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240: y
-      CONFIG_ESPTOOLPY_FLASHMODE_QIO: y
-      CONFIG_ESPTOOLPY_FLASHFREQ_120M: y
-      CONFIG_SPIRAM_MODE_OCT: y
-      CONFIG_IDF_EXPERIMENTAL_FEATURES: y
-      CONFIG_SPIRAM_SPEED_120M: y
-      CONFIG_SPIRAM_FETCH_INSTRUCTIONS: y
-      CONFIG_SPIRAM_RODATA: y
-      CONFIG_ESP32S3_DATA_CACHE_LINE_64B: y
-      #CONFIG_COMPILER_OPTIMIZATION_SIZE: y
-      CONFIG_COMPILER_OPTIMIZATION_PERF: y
-      #CONFIG_COMPILER_OPTIMIZATION_DEBUG: y
-    advanced:
-      enable_idf_experimental_features: True
-
 
 ################################################################################
 # Enable logging
@@ -362,6 +353,7 @@ script:
 lvgl:
   log_level: none #INFO
   color_depth: 16
+  buffer_size: 25%
   bg_color: my_gray
   text_font: arial_12
   width: 320
