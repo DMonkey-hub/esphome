@@ -1,5 +1,5 @@
 <br>
-I've updated this example to use ESPHome 2025.7.2 - there was a lot broken during the last 6 months
+I've updated this example to use ESPHome 2025.11.0 - incorporating the work of <a target="_blank" href="https://community.home-assistant.io/u/gingermist">gingermist</a> and <a target="_blank" href="https://community.home-assistant.io/u/andrew_NH">andrew_NH</a>
 <br><br>
 good luck
 <br>
