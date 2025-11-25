@@ -6,5 +6,6 @@ https://www.aliexpress.com/item/1005007566315926.html
 
 The example esphome-LVGL-example
 there is the YAML file
-and a photo of the display contents after successful compilation<br><br>
+and a photo of the display contents after successful compilation
+
 <img src="../../LVGL%20example.jpg" alt="Example image"><br><br>
