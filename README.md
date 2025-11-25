@@ -14,7 +14,7 @@ Core: 2025.11.3<br>
 Supervisor: 2025.11.4<br>
 Operating System: 16.3<br>
 Frontend: 20251105.1<br>
-ESPhome: 2025.11.0
+ESPhome: 2025.11.0<br>
 <br>
 I've also uploaded this <a target="_blank" href="https://github.com/DMonkey-hub/esphome/tree/main/examples/ESP32-S3-Touch-LCD-7">test</a> example using the <a target="_blank" href="https://www.waveshare.com/wiki/ESP32-S3-Touch-LCD-7">ESP32-S3-Touch-LCD-7</a> device in case it helps others.<br><br>
 I've updated this example to use ESPHome 2025.11.0
