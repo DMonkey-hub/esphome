@@ -18,3 +18,6 @@ I've also uploaded this <a target="_blank" href="https://github.com/DMonkey-hub/
 I've updated this example to use ESPHome 2025.7.2 - there was a lot broken during the last 6 months
 <br><br>
 <img src="ESP32-S3-Touch-LCD-7.jpg" alt="LCD-7 Example image"><br><br>
+
+And here is an example of using a light switch on Home Assistant<br><br>
+<a target="_blank" href="https://github.com/DMonkey-hub/esphome/tree/main/examples/ESP32-S3-Touch-LCD-7">Light Switch</a>
