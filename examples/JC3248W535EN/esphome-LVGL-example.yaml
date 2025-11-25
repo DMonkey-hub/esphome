@@ -2,10 +2,10 @@
 # Substitution Variables
 ################################################################################
 substitutions:
-  device_internal_name: esphome17
-  device_wifi_name: esphome-17
-  device_friendly_name: ESPHome 17
-  device_ip_address: 192.168.1.17
+  device_internal_name: esphome_16
+  device_wifi_name: esphome-16
+  device_friendly_name: ESPHome 16
+  device_ip_address: 192.168.1.16
   device_sampling_time: 30s
 
 ################################################################################
@@ -33,41 +33,18 @@ esphome:
   name: ${device_internal_name}
   friendly_name: ${device_friendly_name}
   platformio_options:
-    build_flags: "-DBOARD_HAS_PSRAM"
-    board_build.arduino.memory_type: qio_opi
-  on_boot:
-    priority: 800
-    then:
+    board_upload.maximum_ram_size: 524288
 
 psram:
   mode: octal
-  speed: 120MHz
+  speed: 80Mhz
 
 esp32:
-  board: esp32s3box
   variant: esp32s3
-  flash_size: 8MB
-  cpu_frequency : 240MHz
+  flash_size: 16MB
+  cpu_frequency: 240MHz
   framework:
-    type: esp-idf
-    sdkconfig_options:
-      CONFIG_ESP32S3_DATA_CACHE_64KB: "y"
-      CONFIG_ESPTOOLPY_FLASHSIZE_8MB: "y"
-      CONFIG_FREERTOS_HZ: "1000"
-      CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240: y
-      CONFIG_ESPTOOLPY_FLASHMODE_QIO: y
-      CONFIG_ESPTOOLPY_FLASHFREQ_120M: y
-      CONFIG_SPIRAM_MODE_OCT: y
-      CONFIG_IDF_EXPERIMENTAL_FEATURES: y
-      CONFIG_SPIRAM_SPEED_120M: y
-      CONFIG_SPIRAM_FETCH_INSTRUCTIONS: y
-      CONFIG_SPIRAM_RODATA: y
-      CONFIG_ESP32S3_DATA_CACHE_LINE_64B: y
-      #CONFIG_COMPILER_OPTIMIZATION_SIZE: y
-      CONFIG_COMPILER_OPTIMIZATION_PERF: y
-      #CONFIG_COMPILER_OPTIMIZATION_DEBUG: y
-    advanced:
-      enable_idf_experimental_features: True
+    type: esp-idf    
 
 ################################################################################
 # Enable logging
@@ -334,7 +311,7 @@ script:
 lvgl:
   log_level: none #INFO
   color_depth: 16
-  buffer_size: 25%
+  #buffer_size: 25%
   bg_color: my_gray
   text_font: arial_12
   width: 320
@@ -724,6 +701,18 @@ display:
     cs_pin:
       number: 45
       ignore_strapping_warning: true
+
+#touchscreen:
+#  - platform: axs15231
+#    id: main_touch
+#    i2c_id: touchscreen_bus
+#    update_interval: 50ms
+#    display: main_display
+#    transform:
+#      #mirror_x: True
+#      mirror_y: True
+#      swap_xy: True # true for rotation 90 or 270 
+
 
 touchscreen:
   - platform: axs15231
